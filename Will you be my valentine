@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Will You Be My Valentine?</title>
+  <style>
+    body {
+      background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      font-size: 3em;
+      color: #fff;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      margin-bottom: 40px;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background: #ff6f61;
+      color: #fff;
+      box-shadow: 1px 1px 5px rgba(0,0,0,0.3);
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #ff3b2e;
+    }
+  </style>
+</head>
+<body>
+  <h1>Will You Be My Valentine?</h1>
+  <button onclick="goToPuzzle()">Yes</button>
+  <button onclick="goToPuzzle()">Of Course!</button>
+
+  <script>
+    function goToPuzzle() {
+      window.location.href = "puzzle.html";
+    }
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Our Puzzle</title>
+  <style>
+    body {
+      background: #f0f0f0;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #puzzle-container {
+      width: 300px;
+      height: 300px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2px;
+      border: 2px solid #333;
+    }
+    .piece {
+      width: 100%;
+      height: 100%;
+      background-image: url('our-picture.jpg');
+      background-size: 300% 300%;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+      cursor: pointer;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 1.5em;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+  <h1>Assemble Our Puzzle!</h1>
+  <div id="puzzle-container">
+    <!-- Puzzle pieces will be generated here -->
+  </div>
+  <p id="message"></p>
+  
+  <script>
+    // Define the correct positions for a 3x3 grid
+    const positions = [
+      {row: 0, col: 0},
+      {row: 0, col: 1},
+      {row: 0, col: 2},
+      {row: 1, col: 0},
+      {row: 1, col: 1},
+      {row: 1, col: 2},
+      {row: 2, col: 0},
+      {row: 2, col: 1},
+      {row: 2, col: 2}
+    ];
+
+    // Create a shuffled version of positions for initial placement
+    let shuffledPositions = positions.slice();
+    shuffledPositions.sort(() => Math.random() - 0.5);
+
+    const puzzleContainer = document.getElementById('puzzle-container');
+    let pieces = [];
+
+    // Create puzzle pieces
+    for (let i = 0; i < 9; i++) {
+      let piece = document.createElement('div');
+      piece.classList.add('piece');
+      piece.setAttribute('draggable', true);
+      // Store the correct index (0-8)
+      piece.dataset.correctIndex = i;
+      // Set the current (shuffled) position
+      piece.dataset.currentRow = shuffledPositions[i].row;
+      piece.dataset.currentCol = shuffledPositions[i].col;
+      
+      // Calculate background position based on the correct segment
+      let correctPos = positions[i];
+      let bgPosX = -(correctPos.col * 100) + '%';
+      let bgPosY = -(correctPos.row * 100) + '%';
+      piece.style.backgroundPosition = bgPosX + ' ' + bgPosY;
+      
+      puzzleContainer.appendChild(piece);
+      pieces.push(piece);
+    }
+
+    // Render the puzzle pieces in the grid based on their current position
+    function renderPuzzle() {
+      pieces.forEach(piece => {
+        // Calculate an order value for CSS Grid (row * 3 + col)
+        piece.style.order = piece.dataset.currentRow * 3 + parseInt(piece.dataset.currentCol);
+      });
+    }
+    renderPuzzle();
+
+    // Drag and drop logic
+    let draggedPiece = null;
+    pieces.forEach(piece => {
+      piece.addEventListener('dragstart', function(e) {
+        draggedPiece = piece;
+      });
+      piece.addEventListener('dragover', function(e) {
+        e.preventDefault();
+      });
+      piece.addEventListener('drop', function(e) {
+        e.preventDefault();
+        if (draggedPiece && draggedPiece !== piece) {
+          // Swap the positions (currentRow and currentCol) of the two pieces
+          let tempRow = draggedPiece.dataset.currentRow;
+          let tempCol = draggedPiece.dataset.currentCol;
+          draggedPiece.dataset.currentRow = piece.dataset.currentRow;
+          draggedPiece.dataset.currentCol = piece.dataset.currentCol;
+          piece.dataset.currentRow = tempRow;
+          piece.dataset.currentCol = tempCol;
+          renderPuzzle();
+          checkPuzzle();
+        }
+      });
+    });
+
+    // Check if the puzzle is solved
+    function checkPuzzle() {
+      let solved = true;
+      pieces.forEach(piece => {
+        let correctIndex = parseInt(piece.dataset.correctIndex);
+        let correctRow = positions[correctIndex].row;
+        let correctCol = positions[correctIndex].col;
+        if (parseInt(piece.dataset.currentRow) !== correctRow || parseInt(piece.dataset.currentCol) !== correctCol) {
+          solved = false;
+        }
+      });
+      if (solved) {
+        document.getElementById('message').textContent = "Congratulations! You solved our puzzle!";
+      } else {
+        document.getElementById('message').textContent = "";
+      }
+    }
+  </script>
+</body>
+</html>
